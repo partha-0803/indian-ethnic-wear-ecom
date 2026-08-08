@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% load static %}
+{% load seo_tags %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+
+{% block content %}
+{# Hero slideshow — brand/hero-1..3 photos (no logo, readable overlay) #}
+<section class="relative min-h-[88vh] overflow-hidden group/hero"
+         x-data="heroSlider({{ hero_image_paths|length|default:3 }})"
+         x-init="start()"
+         @mouseenter="pause()"
+         @mouseleave="start()">
+  {% for path in hero_image_paths %}
+  <div class="absolute inset-0 transition-opacity duration-[1200ms] ease-out"
+       :class="index === {{ forloop.counter0 }} ? 'opacity-100 z-[1]' : 'opacity-0 z-0'"
+       aria-hidden="true">
+    <img src="{% static path %}"
+         alt="{{ store.store_name }} — look {{ forloop.counter }}"
+         class="hero-slide-img absolute inset-0 w-full h-full object-cover object-[center_20%]"
+         {% if forloop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+    <div class="absolute inset-0 hero-overlay pointer-events-none"></div>
+  </div>
+  {% empty %}
+  <div class="absolute inset-0 z-[1]">
+    <img src="{% static 'brand/hero-1.jpg' %}" alt="{{ store.store_name }}"
+         class="hero-slide-img absolute inset-0 w-full h-full object-cover object-[center_20%]">
+    <div class="absolute inset-0 hero-overlay pointer-events-none"></div>
+  </div>
+  {% endfor %}
+
+  <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[88vh] flex items-end pb-16 pt-28">
+    <div class="max-w-xl animate-fade-up hero-copy">
+      {% if hero_slides %}
+        {% for slide in hero_slides %}
+        <div x-show="index === {{ forloop.counter0 }}" x-transition.opacity.duration.500ms>
+          <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-cream tracking-[0.08em] leading-none">
+            {% if slide.title %}{{ slide.title }}{% else %}{{ store.store_name }}{% endif %}
+          </h1>
+          <p class="mt-5 text-cream/90 text-lg font-light max-w-md leading-relaxed">
+            {% if slide.subtitle %}{{ slide.subtitle }}{% else %}{{ store.tagline }}{% endif %}
+          </p>
+          <div class="mt-8 flex flex-wrap gap-4">
+            <a href="{% if slide.cta_url %}{% if slide.cta_url.0 == '/' %}{{ slide.cta_url }}{% else %}/{{ slide.cta_url }}{% endif %}{% else %}{% url 'catalog:shop' %}{% endif %}"
+               class="btn-primary hero-cta">
+              {{ slide.cta_label|default:"Shop Collection" }}
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-cream tracking-[0.08em] leading-none">
+          {{ store.store_name }}
+        </h1>
+        <p class="mt-5 text-cream/90 text-lg font-light max-w-md leading-relaxed">
+          {{ store.tagline }}. Tailored silhouettes in gold, maroon, and midnight hues.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="{% url 'catalog:shop' %}" class="btn-primary hero-cta">Shop Collection</a>
+          <a href="{% url 'catalog:category' 'sherwanis' %}" class="btn-ghost">Sherwani Edit</a>
+        </div>
+      {% endif %}
+
+      {% if hero_image_paths|length > 1 %}
+      <div class="mt-10 flex items-center gap-3">
+        {% for path in hero_image_paths %}
+        <button type="button"
+                @click="go({{ forloop.counter0 }})"
+                class="h-1.5 transition-all duration-300 rounded-full"
+                :class="index === {{ forloop.counter0 }} ? 'w-10 bg-gold' : 'w-3 bg-cream/40 hover:bg-cream/70'"
+                aria-label="Go to slide {{ forloop.counter }}"></button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if hero_image_paths|length > 1 %}
+  <button type="button" @click="prev()"
+          class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 text-cream/80 hover:text-gold transition opacity-0 group-hover/hero:opacity-100"
+          aria-label="Previous slide">‹</button>
+  <button type="button" @click="next()"
+          class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 text-cream/80 hover:text-gold transition opacity-0 group-hover/hero:opacity-100"
+          aria-label="Next slide">›</button>
+  {% endif %}
+</section>
+
+{# Categories #}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+  <div class="mb-10">
+    <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">Collections</p>
+    <h2 class="font-display text-4xl text-maroon tracking-wide">Shop by Category</h2>
+  </div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+    {% for cat in categories %}
+    <a href="{{ cat.get_absolute_url }}" class="group relative aspect-[3/4] overflow-hidden bg-maroon/10">
+      {% if cat.image %}
+      <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105">
+      {% else %}
+      <div class="absolute inset-0 bg-gradient-to-br from-maroon to-ink"></div>
+      {% endif %}
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-5">
+        <h3 class="font-display text-2xl text-cream tracking-wide">{{ cat.name }}</h3>
+        <span class="text-xs text-gold-light uppercase tracking-widest opacity-0 group-hover:opacity-100 transition">View all</span>
+      </div>
+    </a>
+    {% empty %}
+    <p class="col-span-4 text-ink/60">Categories will appear after seeding the catalog.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{# About Us #}
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-maroon/5 via-ivory to-gold/10"></div>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <div class="order-2 lg:order-1">
+      <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">About Us</p>
+      <h2 class="font-display text-4xl lg:text-5xl text-maroon tracking-wide">{{ store.about_title }}</h2>
+      <p class="mt-6 text-ink/75 leading-relaxed text-lg whitespace-pre-line">{{ store.about_body }}</p>
+      <a href="{% url 'catalog:shop' %}" class="btn-primary mt-8 inline-flex">Explore the collection</a>
+    </div>
+    <div class="order-1 lg:order-2 relative aspect-[4/5] overflow-hidden group">
+      {% if store.about_image %}
+      <img src="{{ store.about_image.url }}" alt="{{ store.about_title }}"
+           class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
+      {% else %}
+      <img src="{% static 'brand/hero.jpg' %}" alt="{{ store.about_title }}"
+           class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
+      {% endif %}
+      <div class="absolute inset-0 ring-1 ring-inset ring-gold/30 pointer-events-none"></div>
+    </div>
+  </div>
+</section>
+
+{# Craft / Made in #}
+<section class="bg-ink text-cream py-20 lg:py-28">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <div class="relative aspect-[5/4] overflow-hidden group">
+      {% if store.craft_image %}
+      <img src="{{ store.craft_image.url }}" alt="{{ store.craft_title }}"
+           class="w-full h-full object-cover transition duration-700 group-hover:scale-105 opacity-90">
+      {% else %}
+      <div class="w-full h-full bg-gradient-to-br from-maroon to-gold/40"></div>
+      {% endif %}
+      <div class="absolute bottom-4 left-4 right-4 text-xs uppercase tracking-[0.25em] text-gold-light">
+        {{ store.craft_locations }}
+      </div>
+    </div>
+    <div>
+      <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">Provenance</p>
+      <h2 class="font-display text-4xl lg:text-5xl text-cream tracking-wide">{{ store.craft_title }}</h2>
+      <p class="mt-6 text-cream/75 leading-relaxed text-lg whitespace-pre-line">{{ store.craft_body }}</p>
+    </div>
+  </div>
+</section>
+
+{# Featured #}
+<section class="bg-ivory/60 py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-10">
+      <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">Curated</p>
+      <h2 class="font-display text-4xl text-maroon tracking-wide">Featured Pieces</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-7">
+      {% for product in featured %}
+        {% include "catalog/partials/product_card.html" %}
+      {% empty %}
+        {% for product in bestsellers %}
+          {% if forloop.counter <= 8 %}
+            {% include "catalog/partials/product_card.html" %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+    <div class="mt-12 text-center">
+      <a href="{% url 'catalog:shop' %}" class="btn-primary">View All Products</a>
+    </div>
+  </div>
+</section>
+
+{# Reviews #}
+{% if reviews %}
+<section class="py-20 lg:py-24 border-t border-maroon/10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">Voices</p>
+      <h2 class="font-display text-4xl text-maroon tracking-wide">Customer Reviews</h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      {% for review in reviews %}
+      <blockquote class="bg-ivory/80 p-6 lg:p-8 border border-maroon/10 hover:border-gold/40 transition">
+        {% stars review.rating %}
+        <p class="mt-4 text-ink/80 leading-relaxed">“{{ review.quote }}”</p>
+        <footer class="mt-6 text-sm">
+          <cite class="not-italic font-medium text-maroon">{{ review.customer_name }}</cite>
+          {% if review.location %}<span class="text-ink/45"> · {{ review.location }}</span>{% endif %}
+        </footer>
+      </blockquote>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block structured_data %}
+{% if reviews %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "{{ store.store_name|escapejs }}",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "reviewCount": "{{ reviews|length }}",
+    "bestRating": "5"
+  }
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function heroSlider(count) {
+  return {
+    index: 0,
+    count: Math.max(count, 1),
+    timer: null,
+    start() {
+      this.stop();
+      if (this.count < 2) return;
+      this.timer = setInterval(() => this.next(), 5500);
+    },
+    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; },
+    pause() { this.stop(); },
+    next() { this.index = (this.index + 1) % this.count; },
+    prev() { this.index = (this.index - 1 + this.count) % this.count; },
+    go(i) { this.index = i; }
+  }
+}
+</script>
+{% endblock %}

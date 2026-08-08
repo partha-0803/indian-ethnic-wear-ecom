@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<section class="max-w-md mx-auto px-4 py-16">
+  <h1 class="font-display text-4xl text-maroon tracking-wide text-center mb-2">Join DESI VIBES</h1>
+  <p class="text-center text-ink/60 text-sm mb-8">Create your account to shop ethnic wear</p>
+  <form method="post" class="space-y-4 bg-ivory border border-maroon/10 p-6">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="text-maroon text-sm">{{ form.non_field_errors }}</div>
+    {% endif %}
+    {% for field in form %}
+    <div>
+      <label class="text-xs text-ink/50 mb-1 block" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<p class="text-maroon text-xs mt-1">{{ field.errors|striptags }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn-primary w-full">Create Account</button>
+  </form>
+  <p class="text-center text-sm text-ink/60 mt-6">
+    Already have an account? <a href="{% url 'accounts:login' %}" class="text-maroon hover:underline">Login</a>
+  </p>
+</section>
+{% endblock %}

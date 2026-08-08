@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Shipping{% endblock %}
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 py-14">
+  <h1 class="font-display text-4xl text-maroon">Shipping Policy</h1>
+  <p class="mt-6 text-ink/70 leading-relaxed">
+    Flat shipping of ₹{{ store.flat_shipping_rate|floatformat:0 }} applies below ₹{{ store.free_shipping_over|floatformat:0 }}.
+    Orders above that threshold ship free. Delivery timelines are estimated for demo purposes.
+  </p>
+</section>
+{% endblock %}

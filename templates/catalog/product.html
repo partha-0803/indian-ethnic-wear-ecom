@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static %}
+{% load seo_tags %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ product.name|escapejs }}",
+  "description": "{{ product.seo_description|escapejs }}",
+  "sku": "{% if product.variants.first %}{{ product.variants.first.sku|escapejs }}{% endif %}",
+  "image": [
+    {% for img in product.images.all %}
+    "{% absolute_url img.image.url %}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "brand": { "@type": "Brand", "name": "{{ store.store_name|escapejs }}" },
+  "category": "{{ product.category.name|escapejs }}",
+  "material": "{{ product.material|escapejs }}",
+  "countryOfOrigin": "{{ product.made_in|escapejs }}",
+  "offers": {
+    "@type": "Offer",
+    "url": "{% absolute_url product.get_absolute_url %}",
+    "priceCurrency": "{{ store.currency|default:'INR' }}",
+    "price": "{{ product.base_price }}",
+    "availability": "https://schema.org/{% if product.variants.all %}InStock{% else %}OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{% absolute_url '/' %}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ product.category.name|escapejs }}", "item": "{% absolute_url product.category.get_absolute_url %}" },
+    { "@type": "ListItem", "position": 3, "name": "{{ product.name|escapejs }}", "item": "{% absolute_url product.get_absolute_url %}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14"
+         x-data="{ ...variantPicker({{ variant_map_json|safe }}), tab: 'details' }">
+  <nav class="text-xs text-ink/50 mb-6 tracking-wide" aria-label="Breadcrumb">
+    <a href="{% url 'catalog:home' %}" class="hover:text-maroon">Home</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'catalog:shop' %}" class="hover:text-maroon">Shop</a>
+    <span class="mx-2">/</span>
+    <a href="{{ product.category.get_absolute_url }}" class="hover:text-maroon">{{ product.category.name }}</a>
+    <span class="mx-2">/</span>
+    <span class="text-ink/80">{{ product.name }}</span>
+  </nav>
+
+  <div class="grid lg:grid-cols-2 gap-10 lg:gap-16">
+    <div>
+      <div class="aspect-[3/4] overflow-hidden bg-maroon/5 mb-3 group">
+        {% with img=product.primary_image %}
+        <img :src="activeImage || '{% if img %}{{ img.image.url }}{% endif %}'"
+             src="{% if img %}{{ img.image.url }}{% endif %}"
+             alt="{{ product.name }} — {{ product.material|default:'ethnic wear' }}"
+             class="w-full h-full object-cover transition duration-700 group-hover:scale-[1.03]"
+             id="main-image">
+        {% endwith %}
+      </div>
+      {% if product.images.count > 1 or product.featured_image %}
+      <div class="grid grid-cols-4 gap-2">
+        {% if product.featured_image %}
+        <button type="button" @click="activeImage = '{{ product.featured_image.url }}'"
+                class="aspect-square overflow-hidden border border-transparent hover:border-gold transition">
+          <img src="{{ product.featured_image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover" loading="lazy">
+        </button>
+        {% endif %}
+        {% for img in product.images.all %}
+        <button type="button" @click="activeImage = '{{ img.image.url }}'"
+                class="aspect-square overflow-hidden border border-transparent hover:border-gold transition">
+          <img src="{{ img.image.url }}" alt="{{ img.alt|default:product.name }}" class="w-full h-full object-cover" loading="lazy">
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div>
+      <p class="text-xs uppercase tracking-[0.25em] text-gold-dark">{{ product.category.name }}</p>
+      <h1 class="font-display text-4xl lg:text-5xl text-maroon mt-2 tracking-wide">{{ product.name }}</h1>
+      <p class="mt-4 text-2xl font-medium" x-text="'₹' + Number(price).toLocaleString('en-IN')">₹{{ product.base_price|floatformat:0 }}</p>
+
+      {% if product.material or product.made_in or product.fit %}
+      <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 text-sm border-y border-maroon/10 py-4">
+        {% if product.material %}
+        <div><dt class="text-ink/45 text-xs uppercase tracking-wider">Material</dt><dd class="mt-0.5">{{ product.material }}</dd></div>
+        {% endif %}
+        {% if product.made_in %}
+        <div><dt class="text-ink/45 text-xs uppercase tracking-wider">Made in</dt><dd class="mt-0.5">{{ product.made_in }}</dd></div>
+        {% endif %}
+        {% if product.fit %}
+        <div><dt class="text-ink/45 text-xs uppercase tracking-wider">Fit</dt><dd class="mt-0.5">{{ product.fit }}</dd></div>
+        {% endif %}
+      </dl>
+      {% endif %}
+
+      <p class="mt-6 text-ink/75 leading-relaxed whitespace-pre-line">{{ product.description }}</p>
+
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs uppercase tracking-[0.2em] text-ink/50">Size</p>
+          <button type="button" @click="tab = 'size'" class="text-xs text-maroon underline underline-offset-2">Size chart</button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {% for size in sizes %}
+          <button type="button"
+                  @click="selectSize({{ size.id }})"
+                  :class="sizeId === {{ size.id }} ? 'selected bg-maroon text-cream' : 'bg-transparent'"
+                  class="size-btn px-4 py-2 text-sm border border-maroon/25 hover:border-maroon transition">
+            {{ size.code }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-xs uppercase tracking-[0.2em] text-ink/50 mb-3">Colour</p>
+        <div class="flex flex-wrap gap-3 items-center">
+          {% for colour in colours %}
+          <button type="button" title="{{ colour.name }}"
+                  @click="selectColour({{ colour.id }})"
+                  :class="colourId === {{ colour.id }} ? 'selected' : ''"
+                  class="colour-btn w-9 h-9 border border-ink/10 transition"
+                  style="background:{{ colour.hex }}"></button>
+          {% endfor %}
+          <span class="text-sm text-ink/60" x-text="colourLabel"></span>
+        </div>
+      </div>
+
+      <p class="mt-4 text-sm" :class="inStock ? 'text-green-800' : 'text-maroon'">
+        <span x-show="variantId" x-text="inStock ? ('In stock · ' + stock + ' left') : 'Out of stock'"></span>
+        <span x-show="!variantId" class="text-ink/50">Select size & colour</span>
+      </p>
+
+      <form method="post" action="{% url 'cart:add' %}" class="mt-8 flex flex-wrap gap-4 items-center"
+            hx-post="{% url 'cart:add' %}"
+            hx-target="#cart-badge"
+            hx-swap="outerHTML"
+            @submit="if (!variantId || !inStock) { $event.preventDefault() }">
+        {% csrf_token %}
+        <input type="hidden" name="variant_id" :value="variantId">
+        <div class="flex items-center border border-maroon/20">
+          <button type="button" class="px-3 py-3" @click="qty = Math.max(1, qty - 1)">−</button>
+          <input type="number" name="qty" x-model.number="qty" min="1" :max="stock || 1"
+                 class="w-12 text-center border-0 bg-transparent focus:outline-none">
+          <button type="button" class="px-3 py-3" @click="qty = Math.min(stock || 1, qty + 1)">+</button>
+        </div>
+        <button type="submit" class="btn-primary flex-1 sm:flex-none"
+                :disabled="!variantId || !inStock">
+          Add to Cart
+        </button>
+      </form>
+
+      <p class="mt-4 text-xs text-ink/40" x-show="sku" x-text="'SKU: ' + sku"></p>
+    </div>
+  </div>
+
+  {# Detail tabs — CMS editable content #}
+  <div class="mt-16 border-t border-maroon/10 pt-10" id="product-info">
+    <div class="flex flex-wrap gap-2 sm:gap-6 border-b border-maroon/10 mb-8" role="tablist">
+      <button type="button" role="tab" @click="tab = 'details'"
+              :class="tab === 'details' ? 'border-maroon text-maroon' : 'border-transparent text-ink/50'"
+              class="pb-3 px-1 text-xs uppercase tracking-[0.2em] border-b-2 transition">Details</button>
+      <button type="button" role="tab" @click="tab = 'size'"
+              :class="tab === 'size' ? 'border-maroon text-maroon' : 'border-transparent text-ink/50'"
+              class="pb-3 px-1 text-xs uppercase tracking-[0.2em] border-b-2 transition">Size chart</button>
+      <button type="button" role="tab" @click="tab = 'care'"
+              :class="tab === 'care' ? 'border-maroon text-maroon' : 'border-transparent text-ink/50'"
+              class="pb-3 px-1 text-xs uppercase tracking-[0.2em] border-b-2 transition">Care & wash</button>
+      {% if product.details_extra %}
+      <button type="button" role="tab" @click="tab = 'more'"
+              :class="tab === 'more' ? 'border-maroon text-maroon' : 'border-transparent text-ink/50'"
+              class="pb-3 px-1 text-xs uppercase tracking-[0.2em] border-b-2 transition">More info</button>
+      {% endif %}
+    </div>
+
+    <div x-show="tab === 'details'" class="max-w-3xl prose-sm text-ink/80 leading-relaxed space-y-4">
+      <p class="whitespace-pre-line">{{ product.description }}</p>
+      <ul class="grid sm:grid-cols-2 gap-3 text-sm list-none p-0">
+        {% if product.material %}<li><strong class="text-ink">Material:</strong> {{ product.material }}</li>{% endif %}
+        {% if product.made_in %}<li><strong class="text-ink">Made in:</strong> {{ product.made_in }}</li>{% endif %}
+        {% if product.fit %}<li><strong class="text-ink">Fit:</strong> {{ product.fit }}</li>{% endif %}
+        {% if product.hsn_code %}<li><strong class="text-ink">HSN:</strong> {{ product.hsn_code }}</li>{% endif %}
+      </ul>
+    </div>
+
+    <div x-show="tab === 'size'" class="max-w-3xl" x-cloak>
+      {% if size_chart_rows %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-maroon text-cream">
+              {% for cell in size_chart_rows.0 %}
+              <th class="text-left px-3 py-2 font-medium tracking-wide">{{ cell }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in size_chart_rows %}
+              {% if not forloop.first %}
+              <tr class="{% cycle 'bg-ivory/80' 'bg-transparent' %}">
+                {% for cell in row %}
+                <td class="px-3 py-2 border-b border-maroon/10">{{ cell }}</td>
+                {% endfor %}
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <pre class="whitespace-pre-wrap text-sm text-ink/70 font-sans">{{ size_chart_raw }}</pre>
+      {% endif %}
+      <p class="mt-4 text-xs text-ink/45">Editable per product in CMS, or falls back to Store Settings → Default Size Chart.</p>
+    </div>
+
+    <div x-show="tab === 'care'" class="max-w-3xl text-ink/80 leading-relaxed whitespace-pre-line" x-cloak>
+      {% if product.care_instructions %}
+      {{ product.care_instructions }}
+      {% else %}
+      Dry clean recommended. Store on a padded hanger. Avoid direct sunlight for prolonged periods. Iron on low heat with a press cloth if needed.
+      {% endif %}
+    </div>
+
+    {% if product.details_extra %}
+    <div x-show="tab === 'more'" class="max-w-3xl text-ink/80 leading-relaxed whitespace-pre-line" x-cloak>
+      {{ product.details_extra }}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if related %}
+  <div class="mt-20">
+    <h2 class="font-display text-3xl text-maroon mb-2">You may also like</h2>
+    <p class="text-sm text-ink/45 mb-8">Curated in CMS — or auto-matched from this collection</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      {% for product in related %}
+        {% include "catalog/partials/product_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function variantPicker(map) {
+  const colourNames = {
+    {% for colour in colours %}{{ colour.id }}: "{{ colour.name }}",{% endfor %}
+  };
+  return {
+    map,
+    sizeId: null,
+    colourId: null,
+    variantId: null,
+    price: "{{ product.base_price }}",
+    stock: 0,
+    inStock: false,
+    sku: "",
+    qty: 1,
+    activeImage: null,
+    get colourLabel() {
+      return this.colourId ? colourNames[this.colourId] || "" : "";
+    },
+    selectSize(id) {
+      this.sizeId = id;
+      this.resolve();
+    },
+    selectColour(id) {
+      this.colourId = id;
+      this.resolve();
+    },
+    resolve() {
+      if (!this.sizeId || !this.colourId) {
+        this.variantId = null;
+        return;
+      }
+      const key = this.sizeId + "-" + this.colourId;
+      const v = this.map[key];
+      if (!v) {
+        this.variantId = null;
+        this.inStock = false;
+        this.stock = 0;
+        this.sku = "";
+        return;
+      }
+      this.variantId = v.id;
+      this.price = v.price;
+      this.stock = v.stock;
+      this.inStock = v.in_stock;
+      this.sku = v.sku;
+      if (this.qty > this.stock) this.qty = Math.max(1, this.stock);
+    }
+  }
+}
+</script>
+{% endblock %}

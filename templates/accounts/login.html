@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<section class="max-w-md mx-auto px-4 py-16">
+  <h1 class="font-display text-4xl text-maroon tracking-wide text-center mb-2">Welcome back</h1>
+  <p class="text-center text-ink/60 text-sm mb-8">Sign in to checkout and track orders</p>
+  <form method="post" class="space-y-4 bg-ivory border border-maroon/10 p-6">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="text-maroon text-sm">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div>
+      <label class="text-xs text-ink/50 mb-1 block">Username</label>
+      <input type="text" name="username" class="input-field" required autofocus
+             value="{{ form.username.value|default:'' }}">
+    </div>
+    <div>
+      <label class="text-xs text-ink/50 mb-1 block">Password</label>
+      <input type="password" name="password" class="input-field" required>
+    </div>
+    <button type="submit" class="btn-primary w-full">Login</button>
+  </form>
+  <p class="text-center text-sm text-ink/60 mt-6">
+    New here? <a href="{% url 'accounts:register' %}" class="text-maroon hover:underline">Create an account</a>
+  </p>
+  <p class="text-center text-xs text-ink/40 mt-4">Demo buyer: buyer / DemoBuyer@123</p>
+</section>
+{% endblock %}

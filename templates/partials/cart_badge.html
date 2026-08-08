@@ -1,0 +1,8 @@
+{% if cart_count %}
+<span id="cart-badge"
+      class="absolute -top-2 -right-3 min-w-[1.25rem] h-5 px-1 rounded-full bg-maroon text-cream text-[10px] flex items-center justify-center font-medium">
+  {{ cart_count }}
+</span>
+{% else %}
+<span id="cart-badge"></span>
+{% endif %}

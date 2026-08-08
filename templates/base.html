@@ -1,0 +1,139 @@
+{% load static %}
+{% load seo_tags %}
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{% if seo_title %}{{ seo_title }}{% else %}{{ store.store_name }} · {{ store.tagline }}{% endif %}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{% if seo_description %}{{ seo_description }}{% else %}{{ store.seo_description }}{% endif %}{% endblock %}">
+  {% if store.seo_keywords %}<meta name="keywords" content="{{ store.seo_keywords }}">{% endif %}
+  <meta name="author" content="{{ store.store_name }}">
+  <meta name="theme-color" content="{{ store.theme_color|default:'#801C2A' }}">
+  <meta name="application-name" content="{{ store.store_name }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="{{ store.store_name }}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="{% url 'webmanifest' %}">
+  <link rel="canonical" href="{% absolute_url canonical_path|default:request.path %}">
+
+  {# Open Graph / social #}
+  <meta property="og:site_name" content="{{ store.store_name }}">
+  <meta property="og:type" content="{{ og_type|default:'website' }}">
+  <meta property="og:title" content="{% if seo_title %}{{ seo_title }}{% else %}{{ store.seo_title }}{% endif %}">
+  <meta property="og:description" content="{% if seo_description %}{{ seo_description }}{% else %}{{ store.seo_description }}{% endif %}">
+  <meta property="og:url" content="{% absolute_url canonical_path|default:request.path %}">
+  <meta property="og:locale" content="en_IN">
+  {% if og_image %}
+  <meta property="og:image" content="{% absolute_url og_image %}">
+  {% elif store.logo %}
+  <meta property="og:image" content="{% absolute_url store.logo.url %}">
+  {% else %}
+  <meta property="og:image" content="{% absolute_url '/static/brand/logo.jpg' %}">
+  {% endif %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% if seo_title %}{{ seo_title }}{% else %}{{ store.seo_title }}{% endif %}">
+  <meta name="twitter:description" content="{% if seo_description %}{{ seo_description }}{% else %}{{ store.seo_description }}{% endif %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F7F1E8',
+            ivory: '#FBF7F0',
+            gold: { DEFAULT: '#C9A227', dark: '#8B6914', light: '#E4C86A' },
+            maroon: { DEFAULT: '#801C2A', dark: '#5A101C', light: '#A33A4A' },
+            ink: '#1A1210',
+          },
+          fontFamily: {
+            display: ['Cormorant Garamond', 'Georgia', 'serif'],
+            sans: ['Outfit', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.8s ease-out both',
+            'fade-in': 'fadeIn 1s ease-out both',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="stylesheet" href="{% static 'css/store.css' %}">
+
+  {# Organization + WebSite JSON-LD (GSO / rich results) #}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "{% absolute_url '/' %}#organization",
+        "name": "{{ store.store_name|escapejs }}",
+        "url": "{% absolute_url '/' %}",
+        "logo": "{% if store.logo %}{% absolute_url store.logo.url %}{% else %}{% absolute_url '/static/brand/logo.jpg' %}{% endif %}",
+        "description": "{{ store.seo_description|escapejs }}",
+        "email": "{{ store.support_email|escapejs }}",
+        "telephone": "{{ store.support_phone|escapejs }}",
+        "areaServed": "IN",
+        "brand": { "@type": "Brand", "name": "{{ store.store_name|escapejs }}" }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "{% absolute_url '/' %}#website",
+        "url": "{% absolute_url '/' %}",
+        "name": "{{ store.store_name|escapejs }}",
+        "description": "{{ store.seo_description|escapejs }}",
+        "publisher": { "@id": "{% absolute_url '/' %}#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "{% absolute_url '/shop/' %}?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        },
+        "inLanguage": "en-IN"
+      }
+    ]
+  }
+  </script>
+  {% block structured_data %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-cream text-ink font-sans antialiased min-h-screen flex flex-col"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% include "partials/nav.html" %}
+
+  {% if messages %}
+  <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
+    {% for message in messages %}
+    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3500)"
+         class="px-4 py-3 shadow-lg text-sm
+         {% if message.tags == 'error' %}bg-maroon text-white{% elif message.tags == 'success' %}bg-ink text-gold-light{% else %}bg-white text-ink border border-gold/30{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main class="flex-1" id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "partials/footer.html" %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

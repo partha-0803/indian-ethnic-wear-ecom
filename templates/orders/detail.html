@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+  <p class="text-xs uppercase tracking-[0.25em] text-gold-dark mb-2">Order</p>
+  <h1 class="font-display text-4xl text-maroon tracking-wide">{{ order.order_number }}</h1>
+  <p class="mt-2 text-sm text-ink/60">
+    {{ order.created_at|date:"d M Y, g:i A" }} · {{ order.get_status_display }} ·
+    {{ order.get_payment_method_display }} ({{ order.get_payment_status_display }})
+  </p>
+
+  <div class="mt-8 space-y-3">
+    {% for item in order.items.all %}
+    <div class="flex justify-between border-b border-maroon/10 py-3 text-sm">
+      <div>
+        <p class="font-medium">{{ item.product_name }}</p>
+        <p class="text-ink/55">{{ item.size_code }} / {{ item.colour_name }} · Qty {{ item.qty }}</p>
+      </div>
+      <p>₹{{ item.line_total|floatformat:0 }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-6 space-y-1 text-sm">
+    <div class="flex justify-between"><span>Subtotal</span><span>₹{{ order.subtotal|floatformat:0 }}</span></div>
+    <div class="flex justify-between"><span>Shipping</span><span>₹{{ order.shipping_total|floatformat:0 }}</span></div>
+    <div class="flex justify-between text-lg font-medium pt-2"><span>Total</span><span>₹{{ order.grand_total|floatformat:0 }}</span></div>
+  </div>
+
+  <div class="mt-8 text-sm text-ink/70">
+    <p class="text-xs uppercase tracking-[0.2em] text-gold-dark mb-2">Shipping</p>
+    <p>{{ order.shipping_name }} · {{ order.shipping_phone }}</p>
+    <p>{{ order.shipping_line1 }}{% if order.shipping_line2 %}, {{ order.shipping_line2 }}{% endif %}</p>
+    <p>{{ order.shipping_city }}, {{ order.shipping_state }} — {{ order.shipping_pincode }}</p>
+  </div>
+
+  <a href="{% url 'orders:list' %}" class="inline-block mt-10 text-sm text-maroon hover:underline">← All orders</a>
+</section>
+{% endblock %}

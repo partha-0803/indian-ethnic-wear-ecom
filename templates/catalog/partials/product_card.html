@@ -1,0 +1,17 @@
+<a href="{{ product.get_absolute_url }}" class="product-card group block">
+  <div class="relative aspect-[3/4] overflow-hidden bg-maroon/5 mb-3">
+    {% with img=product.primary_image %}
+    {% if img %}
+    <img src="{{ img.image.url }}" alt="{{ img.alt|default:product.name }}"
+         class="w-full h-full object-cover" loading="lazy">
+    {% else %}
+    <div class="w-full h-full bg-gradient-to-br from-gold/30 to-maroon/40 flex items-center justify-center">
+      <span class="font-display text-2xl text-maroon/50">{{ product.name|truncatechars:18 }}</span>
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+  <p class="text-[10px] uppercase tracking-[0.2em] text-gold-dark">{{ product.category.name }}</p>
+  <h3 class="mt-1 font-medium text-ink group-hover:text-maroon transition line-clamp-2">{{ product.name }}</h3>
+  <p class="mt-1 text-sm text-ink/80">₹{{ product.base_price|floatformat:0 }}</p>
+</a>

@@ -1,0 +1,44 @@
+# Project: Ethnic Wear E-commerce (prototype, ~70-80% prod-ready, config-driven)
+
+## Stack (do not deviate without being asked)
+- Backend: Django (latest LTS). NOT Flask.
+- Frontend: Django templates + HTMX + Tailwind CSS + Alpine.js. Monolith, no separate SPA.
+- DB: PostgreSQL in prod, SQLite for local dev only.
+- Admin theme: django-unfold.
+- Payments: Razorpay Standard Checkout.
+- Invoices: WeasyPrint (HTML -> PDF).
+- Shipping: Shiprocket API (optional, behind a toggle).
+- CRM: Zoho CRM (optional) with a local Excel/CSV fallback.
+
+## Core design principle: config over code
+- All client-specific behavior lives in a single `StoreSettings` model editable from Django admin.
+- Every integration (Razorpay, Shiprocket, Zoho) sits behind a small interface with a working
+  fallback (e.g. Zoho off -> write invoice row to Excel; Shiprocket off -> manual status in admin).
+- A half-configured store must still complete an order end-to-end.
+
+## Data rules
+- Sizes and colours are DATABASE ROWS, never hardcoded enums. Support 8+ colours, no hard cap.
+- ProductVariant = product x size x colour, unique together, with its own SKU + stock.
+- OrderItem snapshots price + tax at purchase time; never recompute from live product prices.
+
+## Security (non-negotiable)
+- NEVER store raw card/UPI data. Razorpay holds it.
+- Payment truth = server-side webhook + signature verification. Never trust the browser's
+  success callback to mark an order paid.
+- All secrets (API keys, Zoho/Razorpay/Shiprocket creds) come from environment variables. No secrets in code or repo.
+- Keep CSRF on. Rate-limit checkout endpoints. Validate pincode + phone on address input.
+
+## GST
+- GST logic is gated by `StoreSettings.gst_enabled`. When on: compute CGST/SGST/IGST, show GSTIN + HSN
+  on the invoice. When off: plain invoice. Products carry optional hsn_code + gst_rate.
+
+## Code conventions
+- Python: type hints, docstrings on public functions, PEP 8, black formatting.
+- Apps split by domain: catalog, cart, orders, payments, shipping, invoicing, accounts, core(settings).
+- Business logic in services.py, not in views or models.
+- Write a happy-path test for each critical flow: add-to-cart, checkout, payment webhook, invoice gen.
+- Use Django migrations; never edit the DB by hand.
+- HTMX for partial updates (cart, filters); Alpine for small client-side interactions only.
+
+## Out of scope for v1 (do not build unless asked)
+Coupons, wishlist, reviews, analytics dashboards, multi-currency, multi-vendor, loyalty.
