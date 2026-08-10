@@ -22,7 +22,9 @@ class StoreSettings(models.Model):
     tagline = models.CharField(
         max_length=200, default="Modern Ethnic Wear for Men", blank=True
     )
-    logo = models.ImageField(upload_to="brand/", blank=True, null=True)
+    logo = models.ImageField(
+        upload_to="brand/", blank=True, null=True, max_length=500
+    )
     theme_color = models.CharField(max_length=20, default="#801C2A")
     currency = models.CharField(max_length=8, default="INR")
 
@@ -45,7 +47,9 @@ class StoreSettings(models.Model):
             "sharper cuts, richer fabrics, and colours that feel royal without the noise."
         ),
     )
-    about_image = models.ImageField(upload_to="brand/", blank=True, null=True)
+    about_image = models.ImageField(
+        upload_to="brand/", blank=True, null=True, max_length=500
+    )
 
     # Homepage — Craft / Made in
     craft_title = models.CharField(
@@ -59,7 +63,9 @@ class StoreSettings(models.Model):
             "in Rajasthan and Uttar Pradesh bring heritage techniques into wearable luxury."
         ),
     )
-    craft_image = models.ImageField(upload_to="brand/", blank=True, null=True)
+    craft_image = models.ImageField(
+        upload_to="brand/", blank=True, null=True, max_length=500
+    )
     craft_locations = models.CharField(
         max_length=255,
         blank=True,
@@ -135,8 +141,10 @@ class HeroSlide(models.Model):
 
     title = models.CharField(max_length=120, blank=True)
     subtitle = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to="hero/")
-    mobile_image = models.ImageField(upload_to="hero/", blank=True, null=True)
+    image = models.ImageField(upload_to="hero/", max_length=500)
+    mobile_image = models.ImageField(
+        upload_to="hero/", blank=True, null=True, max_length=500
+    )
     cta_label = models.CharField(max_length=60, blank=True, default="Shop Collection")
     cta_url = models.CharField(max_length=200, blank=True, default="/shop/")
     sort_order = models.PositiveIntegerField(default=0)

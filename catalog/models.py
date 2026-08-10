@@ -18,7 +18,9 @@ class Category(models.Model):
         related_name="children",
     )
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to="categories/", blank=True, null=True)
+    image = models.ImageField(
+        upload_to="categories/", blank=True, null=True, max_length=500
+    )
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveIntegerField(default=0)
     meta_title = models.CharField(max_length=70, blank=True)
@@ -79,6 +81,7 @@ class Product(models.Model):
         upload_to="products/featured/",
         blank=True,
         null=True,
+        max_length=500,
         help_text="Main image on shop cards & product page. Upload or replace here from the CMS.",
     )
     # Product details (CMS-editable)
@@ -189,7 +192,7 @@ class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="images"
     )
-    image = models.ImageField(upload_to="products/")
+    image = models.ImageField(upload_to="products/", max_length=500)
     alt = models.CharField(max_length=200, blank=True)
     is_primary = models.BooleanField(
         default=False,

@@ -7,3 +7,4 @@ requests>=2.31
 psycopg2-binary
 dj-database-url
 python-decouple
+vercel_blob>=0.4

@@ -102,6 +102,28 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Vercel (and other serverless hosts) have a read-only app filesystem.
+# When BLOB_READ_WRITE_TOKEN is set, store uploads in Vercel Blob instead.
+VERCEL_BLOB_TIMEOUT = int(os.getenv("VERCEL_BLOB_TIMEOUT", "60"))
+if os.getenv("BLOB_READ_WRITE_TOKEN"):
+    STORAGES = {
+        "default": {
+            "BACKEND": "core.storage.VercelBlobStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "accounts:login"
