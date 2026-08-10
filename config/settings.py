@@ -4,6 +4,8 @@ from pathlib import Path
 import os
 
 from dotenv import load_dotenv
+import dj_database_url
+from decouple import config
 
 load_dotenv()
 
@@ -124,4 +126,11 @@ UNFOLD = {
             "950": "46 10 16",
         },
     },
+}
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL'),
+        conn_max_age=600,
+    )
 }
