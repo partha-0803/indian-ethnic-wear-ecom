@@ -67,7 +67,8 @@ python manage.py seed_content      # hero slides, reviews, about/craft, product 
 
 ## Media uploads on Vercel
 
-Vercel’s app filesystem is read-only, so Django cannot write to `media/`.
+Seeded demo images live under `media/` and are committed so `/media/...` works on Vercel.
+Vercel’s app filesystem is read-only, so **new** admin uploads cannot write to `media/`.
 
 1. In the [Vercel dashboard](https://vercel.com/dashboard) → your project → **Storage** → create a **Blob** store and connect it to this project.
 2. Redeploy (Vercel injects `BLOB_READ_WRITE_TOKEN`).

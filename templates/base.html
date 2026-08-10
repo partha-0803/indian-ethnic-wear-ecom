@@ -17,6 +17,9 @@
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="googlebot" content="index, follow">
   <link rel="manifest" href="{% url 'webmanifest' %}">
+  <link rel="icon" href="{% static 'brand/logo.webp' %}" type="image/webp">
+  <link rel="alternate icon" href="{% static 'brand/logo.jpg' %}" type="image/jpeg">
+  <link rel="apple-touch-icon" href="{% static 'brand/logo.jpg' %}">
   <link rel="canonical" href="{% absolute_url canonical_path|default:request.path %}">
 
   {# Open Graph / social #}

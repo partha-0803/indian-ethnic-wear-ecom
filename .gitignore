@@ -4,9 +4,10 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 .env
-media/
-!media/products/.gitkeep
+# Keep demo/catalog images in git so Vercel can serve /media/... paths.
+# Local ad-hoc uploads outside brand/hero/products can stay untracked if needed.
 staticfiles/
+
 *.log
 .DS_Store
 Thumbs.db
