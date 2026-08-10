@@ -9,7 +9,7 @@ cd ethnic-wear
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-copy .env.example .env   # if needed
+copy .env.example .env   # set DATABASE_URL to your Neon connection string
 python manage.py migrate
 python manage.py seed_catalog
 python manage.py runserver
@@ -58,7 +58,7 @@ python manage.py seed_content      # hero slides, reviews, about/craft, product 
 
 ## Stack
 
-- Django 5 + SQLite (local)
+- Django 5 + Neon Postgres (`DATABASE_URL`); SQLite fallback for local-only
 - django-unfold admin theme
 - HTMX cart updates
 - Alpine.js variant picker
