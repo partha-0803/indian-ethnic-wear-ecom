@@ -2,8 +2,11 @@
   <div class="relative aspect-[3/4] overflow-hidden bg-maroon/5 mb-3">
     {% with img=product.primary_image %}
     {% if img %}
-    <img src="{{ img.image.url }}" alt="{{ img.alt|default:product.name }}"
-         class="w-full h-full object-cover" loading="lazy">
+    <img src="{{ img.image.url }}"
+         alt="{{ img.alt|default:product.name }} — buy {{ product.category.name }} online"
+         class="w-full h-full object-cover"
+         loading="lazy"
+         width="600" height="800">
     {% else %}
     <div class="w-full h-full bg-gradient-to-br from-gold/30 to-maroon/40 flex items-center justify-center">
       <span class="font-display text-2xl text-maroon/50">{{ product.name|truncatechars:18 }}</span>

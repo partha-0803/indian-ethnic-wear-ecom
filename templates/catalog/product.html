@@ -5,6 +5,7 @@
 {% block title %}{{ seo_title }}{% endblock %}
 
 {% block structured_data %}
+{% with gallery=product.gallery_images %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -13,7 +14,7 @@
   "description": "{{ product.seo_description|escapejs }}",
   "sku": "{% if product.variants.first %}{{ product.variants.first.sku|escapejs }}{% endif %}",
   "image": [
-    {% for img in product.images.all %}
+    {% for img in gallery %}
     "{% absolute_url img.image.url %}"{% if not forloop.last %},{% endif %}
     {% endfor %}
   ],
@@ -31,6 +32,7 @@
   }
 }
 </script>
+{% endwith %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -45,8 +47,9 @@
 {% endblock %}
 
 {% block content %}
+{% with gallery=product.gallery_images main_img=product.primary_image %}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14"
-         x-data="{ ...variantPicker({{ variant_map_json|safe }}), tab: 'details' }">
+         x-data='productPage({{ variant_map_json|safe }}, {% if main_img %}"{{ main_img.image.url }}"{% else %}null{% endif %})'>
   <nav class="text-xs text-ink/50 mb-6 tracking-wide" aria-label="Breadcrumb">
     <a href="{% url 'catalog:home' %}" class="hover:text-maroon">Home</a>
     <span class="mx-2">/</span>
@@ -59,27 +62,34 @@
 
   <div class="grid lg:grid-cols-2 gap-10 lg:gap-16">
     <div>
-      <div class="aspect-[3/4] overflow-hidden bg-maroon/5 mb-3 group">
-        {% with img=product.primary_image %}
-        <img :src="activeImage || '{% if img %}{{ img.image.url }}{% endif %}'"
-             src="{% if img %}{{ img.image.url }}{% endif %}"
-             alt="{{ product.name }} — {{ product.material|default:'ethnic wear' }}"
-             class="w-full h-full object-cover transition duration-700 group-hover:scale-[1.03]"
-             id="main-image">
-        {% endwith %}
-      </div>
-      {% if product.images.count > 1 or product.featured_image %}
-      <div class="grid grid-cols-4 gap-2">
-        {% if product.featured_image %}
-        <button type="button" @click="activeImage = '{{ product.featured_image.url }}'"
-                class="aspect-square overflow-hidden border border-transparent hover:border-gold transition">
-          <img src="{{ product.featured_image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover" loading="lazy">
-        </button>
+      <div class="aspect-[3/4] overflow-hidden bg-maroon/5 mb-3 group relative">
+        {% if main_img %}
+        <img src="{{ main_img.image.url }}"
+             :src="activeImage || '{{ main_img.image.url }}'"
+             alt="{{ product.name }} — {{ product.material|default:'mens ethnic wear' }} by {{ store.store_name }}"
+             class="w-full h-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
+             width="800" height="1067"
+             id="main-image"
+             fetchpriority="high">
+        {% else %}
+        <div class="w-full h-full bg-gradient-to-br from-gold/20 to-maroon/30 flex items-center justify-center">
+          <span class="font-display text-2xl text-maroon/40">{{ product.name }}</span>
+        </div>
         {% endif %}
-        {% for img in product.images.all %}
-        <button type="button" @click="activeImage = '{{ img.image.url }}'"
-                class="aspect-square overflow-hidden border border-transparent hover:border-gold transition">
-          <img src="{{ img.image.url }}" alt="{{ img.alt|default:product.name }}" class="w-full h-full object-cover" loading="lazy">
+      </div>
+      {% if gallery|length > 1 %}
+      <div class="grid grid-cols-4 gap-2" role="list" aria-label="Product gallery">
+        {% for img in gallery %}
+        <button type="button"
+                @click="activeImage = '{{ img.image.url }}'"
+                :class="activeImage === '{{ img.image.url }}' ? 'border-gold' : 'border-transparent'"
+                class="aspect-square overflow-hidden border transition hover:border-gold/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                aria-label="View image {{ forloop.counter }} of {{ product.name }}">
+          <img src="{{ img.image.url }}"
+               alt="{{ img.alt|default:product.name }}"
+               class="w-full h-full object-cover"
+               loading="lazy"
+               width="200" height="200">
         </button>
         {% endfor %}
       </div>
@@ -243,7 +253,7 @@
   {% if related %}
   <div class="mt-20">
     <h2 class="font-display text-3xl text-maroon mb-2">You may also like</h2>
-    <p class="text-sm text-ink/45 mb-8">Curated in CMS — or auto-matched from this collection</p>
+    <p class="text-sm text-ink/45 mb-8">More {{ product.category.name|lower }} from the {{ store.store_name }} collection</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
       {% for product in related %}
         {% include "catalog/partials/product_card.html" %}
@@ -252,16 +262,18 @@
   </div>
   {% endif %}
 </section>
+{% endwith %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function variantPicker(map) {
+function productPage(map, initialImage) {
   const colourNames = {
     {% for colour in colours %}{{ colour.id }}: "{{ colour.name }}",{% endfor %}
   };
   return {
     map,
+    tab: "details",
     sizeId: null,
     colourId: null,
     variantId: null,
@@ -270,7 +282,7 @@ function variantPicker(map) {
     inStock: false,
     sku: "",
     qty: 1,
-    activeImage: null,
+    activeImage: initialImage || null,
     get colourLabel() {
       return this.colourId ? colourNames[this.colourId] || "" : "";
     },
@@ -303,7 +315,7 @@ function variantPicker(map) {
       this.sku = v.sku;
       if (this.qty > this.stock) this.qty = Math.max(1, this.stock);
     }
-  }
+  };
 }
 </script>
 {% endblock %}

@@ -131,8 +131,8 @@ class StoreSettings(models.Model):
 
     def seo_description(self) -> str:
         return self.meta_description or (
-            f"{self.tagline}. Shop premium sherwanis, kurtas, bandhgalas and Nehru jackets "
-            f"for men. Crafted in India."
+            f"Shop premium men's ethnic wear — sherwanis, kurtas, bandhgalas and Nehru jackets. "
+            f"Crafted in India for weddings and festive occasions. {self.tagline}."
         )[:160]
 
 

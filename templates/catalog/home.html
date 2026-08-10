@@ -23,7 +23,7 @@
   </div>
   {% empty %}
   <div class="absolute inset-0 z-[1]">
-    <img src="{% static 'brand/hero-1.jpg' %}" alt="{{ store.store_name }}"
+    <img src="{% static 'brand/hero-1.webp' %}" alt="{{ store.store_name }}"
          class="hero-slide-img absolute inset-0 w-full h-full object-cover object-[center_20%]">
     <div class="absolute inset-0 hero-overlay pointer-events-none"></div>
   </div>
@@ -87,22 +87,23 @@
 
 {# Categories #}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-  <div class="mb-10">
-    <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">Collections</p>
-    <h2 class="font-display text-4xl text-maroon tracking-wide">Shop by Category</h2>
-  </div>
+    <div class="mb-10">
+      <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">Collections</p>
+      <h2 class="font-display text-4xl text-maroon tracking-wide">Shop by Category</h2>
+      <p class="mt-3 text-ink/60 max-w-xl">Browse men’s kurtas, sherwanis, Indo-Western bandhgalas, and Nehru jackets designed for weddings and festive occasions.</p>
+    </div>
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
     {% for cat in categories %}
-    <a href="{{ cat.get_absolute_url }}" class="group relative aspect-[3/4] overflow-hidden bg-maroon/10">
+    <a href="{{ cat.get_absolute_url }}" class="group relative aspect-[3/4] overflow-hidden bg-maroon/10 hover-lift">
       {% if cat.image %}
-      <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105">
+      <img src="{{ cat.image.url }}" alt="Shop {{ cat.name }} — mens ethnic wear at {{ store.store_name }}" class="absolute inset-0 w-full h-full object-cover transition duration-700 ease-out group-hover:scale-110">
       {% else %}
       <div class="absolute inset-0 bg-gradient-to-br from-maroon to-ink"></div>
       {% endif %}
-      <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent transition duration-500 group-hover:from-ink/90"></div>
       <div class="absolute bottom-0 left-0 right-0 p-5">
         <h3 class="font-display text-2xl text-cream tracking-wide">{{ cat.name }}</h3>
-        <span class="text-xs text-gold-light uppercase tracking-widest opacity-0 group-hover:opacity-100 transition">View all</span>
+        <span class="text-xs text-gold-light uppercase tracking-widest opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition duration-300 inline-block">View all</span>
       </div>
     </a>
     {% empty %}
@@ -126,7 +127,7 @@
       <img src="{{ store.about_image.url }}" alt="{{ store.about_title }}"
            class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
       {% else %}
-      <img src="{% static 'brand/hero.jpg' %}" alt="{{ store.about_title }}"
+      <img src="{% static 'brand/hero-1.webp' %}" alt="{{ store.about_title }}"
            class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
       {% endif %}
       <div class="absolute inset-0 ring-1 ring-inset ring-gold/30 pointer-events-none"></div>
@@ -136,22 +137,33 @@
 
 {# Craft / Made in #}
 <section class="bg-ink text-cream py-20 lg:py-28">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-    <div class="relative aspect-[5/4] overflow-hidden group">
-      {% if store.craft_image %}
-      <img src="{{ store.craft_image.url }}" alt="{{ store.craft_title }}"
-           class="w-full h-full object-cover transition duration-700 group-hover:scale-105 opacity-90">
-      {% else %}
-      <div class="w-full h-full bg-gradient-to-br from-maroon to-gold/40"></div>
-      {% endif %}
-      <div class="absolute bottom-4 left-4 right-4 text-xs uppercase tracking-[0.25em] text-gold-light">
-        {{ store.craft_locations }}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <div class="relative mx-auto w-full max-w-md lg:max-w-none">
+      <div class="relative aspect-[3/4] overflow-hidden group craft-frame">
+        {% if store.craft_image %}
+        <img src="{{ store.craft_image.url }}"
+             alt="{{ store.craft_title }} — artisan mens ethnic wear from {{ store.craft_locations }}"
+             class="w-full h-full object-cover transition duration-700 ease-out group-hover:scale-105 opacity-95"
+             width="900" height="1200" loading="lazy">
+        {% else %}
+        <div class="w-full h-full bg-gradient-to-br from-maroon to-gold/40"></div>
+        {% endif %}
+        <div class="absolute inset-0 ring-1 ring-inset ring-gold/25 pointer-events-none"></div>
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent pt-24 pb-5 px-5">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-gold-light">{{ store.craft_locations }}</p>
+        </div>
       </div>
     </div>
-    <div>
+    <div class="lg:py-6">
       <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">Provenance</p>
-      <h2 class="font-display text-4xl lg:text-5xl text-cream tracking-wide">{{ store.craft_title }}</h2>
-      <p class="mt-6 text-cream/75 leading-relaxed text-lg whitespace-pre-line">{{ store.craft_body }}</p>
+      <h2 class="font-display text-4xl lg:text-5xl text-cream tracking-wide leading-tight">{{ store.craft_title }}</h2>
+      <p class="mt-6 text-cream/75 leading-relaxed text-lg whitespace-pre-line max-w-xl">{{ store.craft_body }}</p>
+      <ul class="mt-8 space-y-3 text-sm text-cream/65 max-w-md">
+        <li class="flex gap-3"><span class="text-gold mt-0.5">◆</span><span>Heritage weaves and contemporary cuts, finished by Indian ateliers</span></li>
+        <li class="flex gap-3"><span class="text-gold mt-0.5">◆</span><span>Wedding-ready sherwanis, kurtas, bandhgalas &amp; Nehru jackets</span></li>
+        <li class="flex gap-3"><span class="text-gold mt-0.5">◆</span><span>Thoughtful sizing, care guides, and celebration-ready packaging</span></li>
+      </ul>
+      <a href="{% url 'catalog:shop' %}" class="btn-ghost mt-10 inline-flex">Shop the craft</a>
     </div>
   </div>
 </section>
@@ -162,6 +174,7 @@
     <div class="mb-10">
       <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">Curated</p>
       <h2 class="font-display text-4xl text-maroon tracking-wide">Featured Pieces</h2>
+      <p class="mt-3 text-ink/60 max-w-xl">Handpicked ethnic wear for men — statement sherwanis, refined kurtas, and tailored jackets ready for your next celebration.</p>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-7">
       {% for product in featured %}

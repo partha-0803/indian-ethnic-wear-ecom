@@ -113,8 +113,10 @@ def generate_model_slide(label: str, palette: tuple, width=1600, height=1000) ->
     draw.text((80, height - 100), label, fill=(245, 240, 230), font=font)
 
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=90)
-    return ContentFile(buf.getvalue(), name=f"hero-{label[:20].replace(' ', '-').lower()}.jpg")
+    img.save(buf, format="WEBP", quality=88, method=4)
+    return ContentFile(
+        buf.getvalue(), name=f"hero-{label[:20].replace(' ', '-').lower()}.webp"
+    )
 
 
 def generate_section_image(title: str, colours, width=1200, height=1500) -> ContentFile:
@@ -130,8 +132,10 @@ def generate_section_image(title: str, colours, width=1200, height=1500) -> Cont
     font = _font(42)
     draw.text((width // 2, height // 2), title, fill=(245, 240, 230), font=font, anchor="mm")
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=88)
-    return ContentFile(buf.getvalue(), name=f"{title.lower().replace(' ', '-')}.jpg")
+    img.save(buf, format="WEBP", quality=85, method=4)
+    return ContentFile(
+        buf.getvalue(), name=f"{title.lower().replace(' ', '-')}.webp"
+    )
 
 
 class Command(BaseCommand):
@@ -140,10 +144,14 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         store = StoreSettings.load()
-        store.meta_title = "DESI VIBES — Modern Ethnic Wear for Men"
+        store.meta_title = "DESI VIBES — Men's Ethnic Wear | Sherwani, Kurta, Bandhgala"
         store.meta_description = (
-            "Shop premium sherwanis, kurtas, bandhgalas and Nehru jackets. "
-            "Crafted in India. Size charts, care guides, and COD checkout."
+            "Shop premium men's ethnic wear online — sherwanis, kurtas, Indo-Western "
+            "bandhgalas and Nehru jackets. Crafted in India for weddings & festivities."
+        )
+        store.seo_keywords = (
+            "mens ethnic wear, sherwani online, kurta for men, bandhgala, "
+            "nehru jacket, wedding sherwani, indo western, DESI VIBES"
         )
         store.about_title = "Our Story"
         store.about_body = (
@@ -154,7 +162,7 @@ class Command(BaseCommand):
         )
         store.craft_title = "Crafted in India"
         store.craft_body = (
-            "Every piece is cut and finished in India by skilled artisans. "
+            "Every DESI VIBES piece is cut and finished in India by skilled artisans. "
             "From Banarasi-inspired weaves to contemporary bandhgalas, our ateliers "
             "in Rajasthan and Uttar Pradesh bring heritage techniques into wearable luxury.\n\n"
             "We work closely with weaving clusters so provenance stays on the label—and in the feel."
@@ -166,12 +174,12 @@ class Command(BaseCommand):
             )
         if not store.craft_image:
             store.craft_image = generate_section_image(
-                "Made in India", ((26, 18, 16), (201, 162, 39))
+                "Made in India", ((26, 18, 16), (201, 162, 39)), width=900, height=1200
             )
         store.save()
         self.stdout.write("Updated Store Settings (about, craft, SEO)")
 
-        # Hero slides (copy/titles only — storefront uses static/brand/hero-1..3.jpg)
+        # Hero slides (copy/titles only — storefront uses static/brand/hero-1..3.webp)
         if not HeroSlide.objects.exists():
             for i, (title, subtitle, cta, url) in enumerate(HERO_COPY):
                 HeroSlide.objects.create(
@@ -181,7 +189,7 @@ class Command(BaseCommand):
                     cta_url=url,
                     sort_order=i,
                     is_active=True,
-                    # Placeholder; homepage renders static brand/hero-*.jpg
+                    # Placeholder; homepage renders static brand/hero-*.webp
                     image=generate_section_image(title, ((26, 18, 16), (128, 28, 42)), 800, 500),
                 )
             self.stdout.write(f"Created {len(HERO_COPY)} hero slide titles (images from static/brand)")

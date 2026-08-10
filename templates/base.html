@@ -14,6 +14,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="{{ store.store_name }}">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="googlebot" content="index, follow">
   <link rel="manifest" href="{% url 'webmanifest' %}">
   <link rel="canonical" href="{% absolute_url canonical_path|default:request.path %}">
 
@@ -29,7 +31,7 @@
   {% elif store.logo %}
   <meta property="og:image" content="{% absolute_url store.logo.url %}">
   {% else %}
-  <meta property="og:image" content="{% absolute_url '/static/brand/logo.jpg' %}">
+  <meta property="og:image" content="{% absolute_url '/static/brand/logo.webp' %}">
   {% endif %}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{% if seo_title %}{{ seo_title }}{% else %}{{ store.seo_title }}{% endif %}">
@@ -86,7 +88,7 @@
         "@id": "{% absolute_url '/' %}#organization",
         "name": "{{ store.store_name|escapejs }}",
         "url": "{% absolute_url '/' %}",
-        "logo": "{% if store.logo %}{% absolute_url store.logo.url %}{% else %}{% absolute_url '/static/brand/logo.jpg' %}{% endif %}",
+        "logo": "{% if store.logo %}{% absolute_url store.logo.url %}{% else %}{% absolute_url '/static/brand/logo.webp' %}{% endif %}",
         "description": "{{ store.seo_description|escapejs }}",
         "email": "{{ store.support_email|escapejs }}",
         "telephone": "{{ store.support_phone|escapejs }}",
@@ -113,8 +115,10 @@
   {% block structured_data %}{% endblock %}
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-cream text-ink font-sans antialiased min-h-screen flex flex-col"
+<body class="bg-cream text-ink font-sans antialiased min-h-screen flex flex-col has-custom-cursor"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <div class="cursor-ring" aria-hidden="true"></div>
+  <div class="cursor-dot" aria-hidden="true"></div>
   {% include "partials/nav.html" %}
 
   {% if messages %}
@@ -135,5 +139,34 @@
 
   {% include "partials/footer.html" %}
   {% block extra_js %}{% endblock %}
+  <script>
+  (function () {
+    if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.body.classList.remove('has-custom-cursor');
+      return;
+    }
+    const ring = document.querySelector('.cursor-ring');
+    const dot = document.querySelector('.cursor-dot');
+    if (!ring || !dot) return;
+    let x = 0, y = 0, rx = 0, ry = 0;
+    let hovering = false;
+    window.addEventListener('mousemove', (e) => {
+      x = e.clientX; y = e.clientY;
+      dot.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+    }, { passive: true });
+    function tick() {
+      rx += (x - rx) * 0.18;
+      ry += (y - ry) * 0.18;
+      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%) scale(${hovering ? 1.55 : 1})`;
+      requestAnimationFrame(tick);
+    }
+    tick();
+    document.addEventListener('mouseover', (e) => {
+      const t = e.target;
+      hovering = !!(t && t.closest && t.closest('a, button, [role="button"], input, select, textarea, label, .product-card'));
+      document.body.classList.toggle('cursor-hover', hovering);
+    });
+  })();
+  </script>
 </body>
 </html>

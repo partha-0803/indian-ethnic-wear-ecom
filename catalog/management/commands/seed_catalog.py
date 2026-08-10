@@ -1,5 +1,5 @@
 """
-Seed DESI VIBES demo catalog: categories, ~35 products each, variants, images, users.
+Seed DESI VIBES demo catalog: categories, 5 products each, variants, images, users.
 
 Usage:
     python manage.py seed_catalog
@@ -167,7 +167,7 @@ COLOURS = [
     ("Emerald", "#0F5C4C", 6),
 ]
 
-PRODUCTS_PER_CATEGORY = 35
+PRODUCTS_PER_CATEGORY = 5
 COLOURS_PER_PRODUCT = 4
 
 # Hex backgrounds for generated product imagery
@@ -285,8 +285,10 @@ def generate_product_image(
         y += 40
 
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=88)
-    return ContentFile(buf.getvalue(), name=f"{title[:40].replace(' ', '-').lower()}.jpg")
+    img.save(buf, format="WEBP", quality=85, method=4)
+    return ContentFile(
+        buf.getvalue(), name=f"{title[:40].replace(' ', '-').lower()}.webp"
+    )
 
 
 def generate_logo() -> ContentFile:
@@ -303,8 +305,8 @@ def generate_logo() -> ContentFile:
     font = _load_font(36)
     draw.text((256, 380), "DESI VIBES", fill=(26, 18, 16), font=font, anchor="mm")
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=92)
-    return ContentFile(buf.getvalue(), name="logo.jpg")
+    img.save(buf, format="WEBP", quality=90, method=4)
+    return ContentFile(buf.getvalue(), name="logo.webp")
 
 
 def generate_hero() -> ContentFile:
@@ -322,8 +324,8 @@ def generate_hero() -> ContentFile:
         alpha_box = [950 + i * 10, 50 + i * 10, 1550 - i * 10, 650 - i * 10]
         draw.ellipse(alpha_box, outline=(201, 162, 39))
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=90)
-    return ContentFile(buf.getvalue(), name="hero.jpg")
+    img.save(buf, format="WEBP", quality=88, method=4)
+    return ContentFile(buf.getvalue(), name="hero.webp")
 
 
 def try_download_logo(url: str) -> ContentFile | None:
@@ -332,7 +334,14 @@ def try_download_logo(url: str) -> ContentFile | None:
 
         resp = requests.get(url, timeout=15)
         if resp.status_code == 200 and resp.content:
-            return ContentFile(resp.content, name="logo.jpg")
+            # Normalize downloads to WebP when possible
+            try:
+                pil = Image.open(io.BytesIO(resp.content)).convert("RGB")
+                out = io.BytesIO()
+                pil.save(out, format="WEBP", quality=90, method=4)
+                return ContentFile(out.getvalue(), name="logo.webp")
+            except Exception:
+                return ContentFile(resp.content, name="logo.webp")
     except Exception:
         return None
     return None
@@ -351,7 +360,7 @@ class Command(BaseCommand):
             "--per-category",
             type=int,
             default=PRODUCTS_PER_CATEGORY,
-            help="Products per category (default 35)",
+            help="Products per category (default 5)",
         )
         parser.add_argument(
             "--logo-url",
@@ -400,17 +409,17 @@ class Command(BaseCommand):
                     hsn_code="6203",
                 )
 
-                # 1–2 images using product colour palette
+                # One primary image by default (admin can add more later)
                 product_colours = rng.sample(list(colours), k=COLOURS_PER_PRODUCT)
-                for img_idx, col in enumerate(product_colours[:2]):
-                    content = generate_product_image(name, col.hex)
-                    ProductImage.objects.create(
-                        product=product,
-                        image=content,
-                        alt=f"{name} in {col.name}",
-                        sort_order=img_idx,
-                        is_primary=(img_idx == 0),
-                    )
+                primary_colour = product_colours[0]
+                content = generate_product_image(name, primary_colour.hex)
+                ProductImage.objects.create(
+                    product=product,
+                    image=content,
+                    alt=f"{name} — {product_colours[0].name} mens {category.name.lower()}",
+                    sort_order=0,
+                    is_primary=True,
+                )
                 # Mirror first gallery image as featured for CMS editing
                 first_img = product.images.filter(is_primary=True).first()
                 if first_img:
@@ -472,11 +481,11 @@ class Command(BaseCommand):
         # Also copy logo + hero into static/brand for templates
         brand_dir = Path(settings.BASE_DIR) / "static" / "brand"
         brand_dir.mkdir(parents=True, exist_ok=True)
-        logo_static = brand_dir / "logo.jpg"
+        logo_static = brand_dir / "logo.webp"
         if not logo_static.exists() and store.logo:
             logo_static.write_bytes(store.logo.read())
             store.logo.seek(0)
-        hero_static = brand_dir / "hero.jpg"
+        hero_static = brand_dir / "hero.webp"
         if not hero_static.exists():
             hero = generate_hero()
             hero_static.write_bytes(hero.read())

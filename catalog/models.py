@@ -145,12 +145,21 @@ class Product(models.Model):
         return self.images.order_by("sort_order", "id").first()
 
     def gallery_images(self):
-        """Images for PDP thumbs — featured first, then gallery (skipping duplicate primary)."""
+        """Unique PDP images — featured first, then gallery (deduped by storage path)."""
         items = []
+        seen: set[str] = set()
+
+        def _add(obj) -> None:
+            name = getattr(getattr(obj, "image", None), "name", "") or ""
+            if not name or name in seen:
+                return
+            seen.add(name)
+            items.append(obj)
+
         if self.featured_image:
-            items.append(_FeaturedImageProxy(self.featured_image, self.name))
+            _add(_FeaturedImageProxy(self.featured_image, self.name))
         for img in self.images.all():
-            items.append(img)
+            _add(img)
         return items
 
     def seo_title(self) -> str:

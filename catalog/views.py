@@ -35,9 +35,9 @@ def home(request):
             "bestsellers": bestsellers,
             "hero_slides": slides,
             "hero_image_paths": [
-                "brand/hero-1.jpg",
-                "brand/hero-2.jpg",
-                "brand/hero-3.jpg",
+                "brand/hero-1.webp",
+                "brand/hero-2.webp",
+                "brand/hero-3.webp",
             ],
             "reviews": reviews,
             "seo_title": store.seo_title(),
@@ -93,17 +93,17 @@ def shop(request, slug=None):
         products = products.order_by("-created_at")
 
     if category:
-        seo_title = category.meta_title or f"{category.name} | DESI VIBES"
+        seo_title = category.meta_title or f"{category.name} for Men | DESI VIBES"
         seo_description = category.meta_description or (
             category.description
-            or f"Shop {category.name} — modern ethnic wear for men at DESI VIBES."
+            or f"Shop {category.name} for men online at DESI VIBES. Wedding & festive ethnic wear crafted in India."
         )[:160]
         canonical_path = category.get_absolute_url()
     else:
-        seo_title = "Shop Ethnic Wear for Men | DESI VIBES"
+        seo_title = "Shop Men's Ethnic Wear Online | Kurtas, Sherwanis & More"
         seo_description = (
-            "Browse kurtas, sherwanis, bandhgalas and Nehru jackets. "
-            "Filter by size, colour and price."
+            "Browse men's kurtas, sherwanis, bandhgalas and Nehru jackets at DESI VIBES. "
+            "Filter by size, colour and price. Crafted in India."
         )
         canonical_path = "/shop/"
 

@@ -6,7 +6,7 @@
         {% if store.logo %}
         <img src="{{ store.logo.url }}" alt="{{ store.store_name }}" class="h-10 w-10 object-contain">
         {% else %}
-        <img src="{% static 'brand/logo.jpg' %}" alt="{{ store.store_name }}" class="h-10 w-10 object-contain"
+        <img src="{% static 'brand/logo.webp' %}" alt="{{ store.store_name }}" class="h-10 w-10 object-contain"
              onerror="this.style.display='none'">
         {% endif %}
         <div>

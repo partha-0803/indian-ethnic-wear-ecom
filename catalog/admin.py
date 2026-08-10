@@ -89,7 +89,9 @@ class ProductAdmin(ModelAdmin):
                 ),
                 "description": (
                     "Featured image is the main photo on shop cards and the product page. "
-                    "Clear & upload a new file here to replace it — no need to touch the assets folder."
+                    "Upload or replace it here to choose which image leads. "
+                    "Add extra photos under Product images below — they appear as gallery "
+                    "thumbnails only when more than one unique image exists."
                 ),
             },
         ),

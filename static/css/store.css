@@ -13,6 +13,51 @@ html {
   display: none !important;
 }
 
+/* Custom cursor — desktop only (body.has-custom-cursor) */
+@media (pointer: fine) {
+  body.has-custom-cursor,
+  body.has-custom-cursor * {
+    cursor: none !important;
+  }
+
+  .cursor-ring,
+  .cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 9999px;
+    will-change: transform;
+  }
+
+  .cursor-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    mix-blend-mode: difference;
+  }
+
+  .cursor-ring {
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid rgba(201, 162, 39, 0.85);
+    transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  body.cursor-hover .cursor-ring {
+    border-color: rgba(247, 241, 232, 0.9);
+    background: rgba(128, 28, 42, 0.12);
+  }
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor-ring,
+  .cursor-dot {
+    display: none !important;
+  }
+}
+
 .hero-overlay {
   background:
     linear-gradient(
@@ -60,12 +105,42 @@ html {
   box-shadow: 0 12px 30px rgba(128, 28, 42, 0.35);
 }
 
+.product-card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
 .product-card img {
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
 }
 
 .product-card:hover img {
-  transform: scale(1.05);
+  transform: scale(1.07);
+  filter: brightness(1.03);
+}
+
+.product-card h3 {
+  transition: color 0.25s ease;
+}
+
+.hover-lift {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(26, 18, 16, 0.18);
+}
+
+.craft-frame {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.footer-signature a {
+  letter-spacing: 0.12em;
 }
 
 .size-btn.selected,
@@ -76,6 +151,16 @@ html {
 
 .colour-btn.selected {
   outline-color: var(--gold);
+}
+
+.size-btn,
+.colour-btn {
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.size-btn:hover,
+.colour-btn:hover {
+  transform: translateY(-1px);
 }
 
 input.input-field,
@@ -106,16 +191,20 @@ textarea.input-field:focus {
   font-size: 0.875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: background 0.25s, transform 0.2s;
+  transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
 }
 
 .btn-primary:hover {
   background: #5A101C;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(128, 28, 42, 0.28);
 }
 
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-ghost {
@@ -128,9 +217,11 @@ textarea.input-field:focus {
   font-size: 0.875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: background 0.25s, color 0.25s;
+  transition: background 0.25s, color 0.25s, transform 0.2s, border-color 0.25s;
 }
 
 .btn-ghost:hover {
   background: rgba(201, 162, 39, 0.15);
+  border-color: rgba(201, 162, 39, 0.95);
+  transform: translateY(-1px);
 }
