@@ -34,10 +34,19 @@ def home(request):
             "featured": featured,
             "bestsellers": bestsellers,
             "hero_slides": slides,
-            "hero_image_paths": [
-                "brand/hero-1.webp",
-                "brand/hero-2.webp",
-                "brand/hero-3.webp",
+            "hero_images": [
+                {
+                    "desktop": "brand/hero-1.webp",
+                    "mobile": "brand/hero-1-mobile.jpg",
+                },
+                {
+                    "desktop": "brand/hero-2.webp",
+                    "mobile": "brand/hero-2-mobile.jpg",
+                },
+                {
+                    "desktop": "brand/hero-3.webp",
+                    "mobile": "brand/hero-3-mobile.jpg",
+                },
             ],
             "reviews": reviews,
             "seo_title": store.seo_title(),
