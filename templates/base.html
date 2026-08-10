@@ -18,8 +18,7 @@
   <meta name="googlebot" content="index, follow">
   <link rel="manifest" href="{% url 'webmanifest' %}">
   <link rel="icon" href="{% static 'brand/logo.webp' %}" type="image/webp">
-  <link rel="alternate icon" href="{% static 'brand/logo.jpg' %}" type="image/jpeg">
-  <link rel="apple-touch-icon" href="{% static 'brand/logo.jpg' %}">
+  <link rel="apple-touch-icon" href="{% static 'brand/logo.webp' %}">
   <link rel="canonical" href="{% absolute_url canonical_path|default:request.path %}">
 
   {# Open Graph / social #}
@@ -144,7 +143,12 @@
   {% block extra_js %}{% endblock %}
   <script>
   (function () {
-    if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const isTouchUI =
+      window.matchMedia('(pointer: coarse)').matches ||
+      window.matchMedia('(hover: none)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      (navigator.maxTouchPoints > 0 && !window.matchMedia('(pointer: fine) and (hover: hover)').matches);
+    if (isTouchUI) {
       document.body.classList.remove('has-custom-cursor');
       return;
     }

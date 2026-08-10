@@ -37,15 +37,15 @@ def home(request):
             "hero_images": [
                 {
                     "desktop": "brand/hero-1.webp",
-                    "mobile": "brand/hero-1-mobile.jpg",
+                    "mobile": "brand/hero-1-mobile.webp",
                 },
                 {
                     "desktop": "brand/hero-2.webp",
-                    "mobile": "brand/hero-2-mobile.jpg",
+                    "mobile": "brand/hero-2-mobile.webp",
                 },
                 {
                     "desktop": "brand/hero-3.webp",
-                    "mobile": "brand/hero-3-mobile.jpg",
+                    "mobile": "brand/hero-3-mobile.webp",
                 },
             ],
             "reviews": reviews,

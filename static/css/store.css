@@ -13,8 +13,14 @@ html {
   display: none !important;
 }
 
-/* Custom cursor — desktop only (body.has-custom-cursor) */
-@media (pointer: fine) {
+/* Custom cursor overlays must never intercept taps/clicks */
+.cursor-ring,
+.cursor-dot {
+  pointer-events: none !important;
+}
+
+/* Custom cursor — fine pointer + hover only (skip phones/tablets) */
+@media (pointer: fine) and (hover: hover) {
   body.has-custom-cursor,
   body.has-custom-cursor * {
     cursor: none !important;
@@ -25,7 +31,6 @@ html {
     position: fixed;
     top: 0;
     left: 0;
-    pointer-events: none;
     z-index: 9999;
     border-radius: 9999px;
     will-change: transform;
@@ -51,11 +56,22 @@ html {
   }
 }
 
-@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+@media (pointer: coarse), (hover: none), (prefers-reduced-motion: reduce) {
   .cursor-ring,
   .cursor-dot {
     display: none !important;
   }
+
+  body.has-custom-cursor,
+  body.has-custom-cursor * {
+    cursor: auto !important;
+  }
+}
+
+a,
+button,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 .hero-overlay {

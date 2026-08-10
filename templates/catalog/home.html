@@ -5,18 +5,18 @@
 {% block title %}{{ seo_title }}{% endblock %}
 
 {% block content %}
-{# Hero slideshow — desktop webp + mobile-only brand/*-mobile.jpg #}
+{# Hero slideshow — desktop webp + mobile-only brand/*-mobile.webp #}
 <section class="relative min-h-[88vh] overflow-hidden group/hero"
          x-data="heroSlider({{ hero_images|length|default:3 }})"
          x-init="start()"
          @mouseenter="pause()"
          @mouseleave="start()">
   {% for slide_img in hero_images %}
-  <div class="absolute inset-0 transition-opacity duration-[1200ms] ease-out"
+  <div class="absolute inset-0 transition-opacity duration-[1200ms] ease-out pointer-events-none"
        :class="index === {{ forloop.counter0 }} ? 'opacity-100 z-[1]' : 'opacity-0 z-0'"
        aria-hidden="true">
     <picture>
-      <source media="(max-width: 767px)" srcset="{% static slide_img.mobile %}">
+      <source media="(max-width: 767px)" srcset="{% static slide_img.mobile %}" type="image/webp">
       <img src="{% static slide_img.desktop %}"
            alt="{{ store.store_name }} — look {{ forloop.counter }}"
            class="hero-slide-img absolute inset-0 w-full h-full object-cover object-center md:object-[center_20%]"
@@ -25,9 +25,9 @@
     <div class="absolute inset-0 hero-overlay pointer-events-none"></div>
   </div>
   {% empty %}
-  <div class="absolute inset-0 z-[1]">
+  <div class="absolute inset-0 z-[1] pointer-events-none">
     <picture>
-      <source media="(max-width: 767px)" srcset="{% static 'brand/hero-1-mobile.jpg' %}">
+      <source media="(max-width: 767px)" srcset="{% static 'brand/hero-1-mobile.webp' %}" type="image/webp">
       <img src="{% static 'brand/hero-1.webp' %}" alt="{{ store.store_name }}"
            class="hero-slide-img absolute inset-0 w-full h-full object-cover object-center md:object-[center_20%]">
     </picture>
@@ -35,11 +35,13 @@
   </div>
   {% endfor %}
 
-  <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[88vh] flex items-end pb-16 pt-28">
-    <div class="max-w-xl animate-fade-up hero-copy">
+  <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[88vh] flex items-end pb-16 pt-28 pointer-events-none">
+    <div class="max-w-xl animate-fade-up hero-copy pointer-events-auto">
       {% if hero_slides %}
         {% for slide in hero_slides %}
-        <div x-show="index === {{ forloop.counter0 }}" x-transition.opacity.duration.500ms>
+        <div x-cloak
+             :class="index === {{ forloop.counter0 }} ? 'block' : 'hidden'"
+             {% if forloop.first %}style="display:block"{% else %}style="display:none"{% endif %}>
           <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-cream tracking-[0.08em] leading-none">
             {% if slide.title %}{{ slide.title }}{% else %}{{ store.store_name }}{% endif %}
           </h1>
@@ -83,10 +85,10 @@
 
   {% if hero_images|length > 1 %}
   <button type="button" @click="prev()"
-          class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 text-cream/80 hover:text-gold transition opacity-0 group-hover/hero:opacity-100"
+          class="hidden md:block absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 text-cream/80 hover:text-gold transition opacity-0 group-hover/hero:opacity-100"
           aria-label="Previous slide">‹</button>
   <button type="button" @click="next()"
-          class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 text-cream/80 hover:text-gold transition opacity-0 group-hover/hero:opacity-100"
+          class="hidden md:block absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 text-cream/80 hover:text-gold transition opacity-0 group-hover/hero:opacity-100"
           aria-label="Next slide">›</button>
   {% endif %}
 </section>
@@ -120,7 +122,7 @@
 
 {# About Us — mobile: About → title → content → image → CTA; desktop: text | image #}
 <section class="relative overflow-hidden">
-  <div class="absolute inset-0 bg-gradient-to-br from-maroon/5 via-ivory to-gold/10"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-maroon/5 via-ivory to-gold/10 pointer-events-none"></div>
   <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
     <div>
       <p class="text-xs uppercase tracking-[0.3em] text-gold-dark mb-2">About Us</p>
@@ -151,10 +153,10 @@
   </div>
 </section>
 
-{# Craft / Made in #}
+{# Craft — mobile: Provenance → title → content → image → CTA; desktop: image | text #}
 <section class="bg-ink text-cream py-20 lg:py-28">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-    <div class="relative mx-auto w-full max-w-md lg:max-w-none">
+    <div class="hidden lg:block relative mx-auto w-full max-w-md lg:max-w-none">
       <div class="relative aspect-[3/4] overflow-hidden group craft-frame">
         {% if store.craft_image %}
         <img src="{{ store.craft_image.url }}"
@@ -165,7 +167,7 @@
         <div class="w-full h-full bg-gradient-to-br from-maroon to-gold/40"></div>
         {% endif %}
         <div class="absolute inset-0 ring-1 ring-inset ring-gold/25 pointer-events-none"></div>
-        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent pt-24 pb-5 px-5">
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent pt-24 pb-5 px-5 pointer-events-none">
           <p class="text-[11px] uppercase tracking-[0.28em] text-gold-light">{{ store.craft_locations }}</p>
         </div>
       </div>
@@ -179,6 +181,22 @@
         <li class="flex gap-3"><span class="text-gold mt-0.5">◆</span><span>Wedding-ready sherwanis, kurtas, bandhgalas &amp; Nehru jackets</span></li>
         <li class="flex gap-3"><span class="text-gold mt-0.5">◆</span><span>Thoughtful sizing, care guides, and celebration-ready packaging</span></li>
       </ul>
+      <div class="mt-8 lg:hidden relative mx-auto w-full max-w-md">
+        <div class="relative aspect-[3/4] overflow-hidden group craft-frame">
+          {% if store.craft_image %}
+          <img src="{{ store.craft_image.url }}"
+               alt="{{ store.craft_title }} — artisan mens ethnic wear from {{ store.craft_locations }}"
+               class="w-full h-full object-cover transition duration-700 ease-out group-hover:scale-105 opacity-95"
+               width="900" height="1200" loading="lazy">
+          {% else %}
+          <div class="w-full h-full bg-gradient-to-br from-maroon to-gold/40"></div>
+          {% endif %}
+          <div class="absolute inset-0 ring-1 ring-inset ring-gold/25 pointer-events-none"></div>
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent pt-24 pb-5 px-5 pointer-events-none">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-gold-light">{{ store.craft_locations }}</p>
+          </div>
+        </div>
+      </div>
       <a href="{% url 'catalog:shop' %}" class="btn-ghost mt-10 inline-flex">Shop the craft</a>
     </div>
   </div>

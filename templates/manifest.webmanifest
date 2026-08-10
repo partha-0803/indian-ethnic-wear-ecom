@@ -21,12 +21,6 @@
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any"
-    },
-    {
-      "src": "{% static 'brand/logo.jpg' %}",
-      "sizes": "180x180",
-      "type": "image/jpeg",
-      "purpose": "any"
     }
   ]
 }
